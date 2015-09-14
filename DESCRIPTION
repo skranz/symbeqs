@@ -1,0 +1,13 @@
+Package: symbeqs
+Type: Package
+Title: Solving or simplifying symbolic systems of equations in R
+Version: 0.1
+Date: 2015-09-14
+Author: Sebastian Kranz
+Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
+Description: Solving or simplifying symbolic systems of equations in R
+             Preliminary version: may change substantially.
+License: GPL >= 2.0
+LazyData: TRUE
+Depends: restorepoint, codeUtils, dplyr, Deriv
+Suggests: shiny, shinyEvents

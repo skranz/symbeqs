@@ -24,10 +24,7 @@ library(pander)
     quote(z + a +y == 3)
   )
   df = cluster.equations(eqs, endo=c("x","y","z"))
-```
-The resulting data.frame looks as follows:
-```{r results='asis'}
-pandoc.table(df)
+  as.data.frame(df)
 ```
 
 
@@ -52,11 +49,7 @@ Alternatively, we can build a function that allows to quickly compute this solut
     quote(6 == 2*(x+y)),
     quote(x ==5)
   )
-  df = cluster.equations(eqs, endo=c("x","y"))
-```
-
-```{r results='asis'}
-pandoc.table(df)
+  as.data.frame(df)
 ```
 
 The last equation has the flag `is.check.eq == TRUE`. This means this equation must hold true given the values of "x" and "y" computed by the earlier equations.
@@ -72,14 +65,8 @@ We now have an example with 3 equations and 3 variables. Unfortunately, equation
     quote(x ==5)
   )
   df = cluster.equations(eqs, endo=c("x","y","z"))
-```
+  as.data.frame(df)
 
-```{r results='asis'}
-pandoc.table(df)
-```
-
-```{r}
-    
   # Free variables
   df$var[df$is.free.var]
   
@@ -98,14 +85,8 @@ By default, we set the value of a free variable to 0. But you may pick any other
     quote(x ==5)
   )
   df = cluster.equations(eqs, endo=c("x","y","z"))
-```
-
-```{r results='asis'}
-pandoc.table(df)
-```
-
-```{r}
-   
+  as.data.frame(df)
+  
   # Free variables
   df$var[df$is.free.var]
   

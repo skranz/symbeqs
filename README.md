@@ -26,48 +26,25 @@ The main function is `cluster.equations` that tries to separate the equation sys
 ## vars:  y, z
 ## rows:  2, 3
 ```
-The resulting data.frame looks as follows:
 
 ```r
-pandoc.table(df)
+  as.data.frame(df)
 ```
 
-
------------------------------------------------------------
- var       expl_                eq_               org_     
------ ---------------- --------------------- --------------
-  x          5                x == 5             x == 5    
-
-  y   -((a + x - 3)/2) y == -((a + x - 3)/2) z + a + y == 3
-
-  z        x + y            z == x + y         x + y == z  
------------------------------------------------------------
-
-Table: Table continues below
-
- 
------------------------------------------------------------
- solved   level   cluster   cluster.size   vars    vars.id 
--------- ------- --------- -------------- ------- ---------
-  TRUE      1        1           1           x        x    
-
-  TRUE      2        2           1        y, a, x   a|x|y  
-
-  TRUE      3        3           1        z, x, y   x|y|z  
------------------------------------------------------------
-
-Table: Table continues below
-
- 
-------------------------------------------------------
- num.vars   org.ind   val   is.check.eq   is.free.var 
----------- --------- ----- ------------- -------------
-    1          2      NA       FALSE         FALSE    
-
-    2          3      NA       FALSE         FALSE    
-
-    3          1      NA       FALSE         FALSE    
-------------------------------------------------------
+```
+##   var            expl_                   eq_           org_ solved level
+## 1   x                5                x == 5         x == 5   TRUE     1
+## 2   y -((a + x - 3)/2) y == -((a + x - 3)/2) z + a + y == 3   TRUE     2
+## 3   z            x + y            z == x + y     x + y == z   TRUE     3
+##   cluster cluster.size    vars vars.id num.vars org.ind val is.check.eq
+## 1       1            1       x       x        1       2  NA       FALSE
+## 2       2            1 y, a, x   a|x|y        2       3  NA       FALSE
+## 3       3            1 z, x, y   x|y|z        3       1  NA       FALSE
+##   is.free.var
+## 1       FALSE
+## 2       FALSE
+## 3       FALSE
+```
 
 
 Here we get exlicit solutions for all variables (column "expl_"). Note that the explizit solution for "y" contains the value of "x". That is because "x" can be computed before "y". The solution for "y" also contains the symbol "a", which is considered an exogenous parameter.
@@ -98,65 +75,23 @@ Alternatively, we can build a function that allows to quickly compute this solut
     quote(6 == 2*(x+y)),
     quote(x ==5)
   )
-  df = cluster.equations(eqs, endo=c("x","y"))
+  as.data.frame(df)
 ```
 
 ```
-## 
-## We have 1 more equations than variables. Include dummy variables DUMMY_1_,...
-## eat.single.front:
-## vars:  x
-## rows:  3 
-## The variables y are determined by more than one equation:
-##   y:
-##     - x + y == 3
-##     - 6 == 2 * (x + y)
-## eat.single.front:
-## vars:  y
-## rows:  2
+##   var            expl_                   eq_           org_ solved level
+## 1   x                5                x == 5         x == 5   TRUE     1
+## 2   y -((a + x - 3)/2) y == -((a + x - 3)/2) z + a + y == 3   TRUE     2
+## 3   z            x + y            z == x + y     x + y == z   TRUE     3
+##   cluster cluster.size    vars vars.id num.vars org.ind val is.check.eq
+## 1       1            1       x       x        1       2  NA       FALSE
+## 2       2            1 y, a, x   a|x|y        2       3  NA       FALSE
+## 3       3            1 z, x, y   x|y|z        3       1  NA       FALSE
+##   is.free.var
+## 1       FALSE
+## 2       FALSE
+## 3       FALSE
 ```
-
-
-```r
-pandoc.table(df)
-```
-
-
---------------------------------------------------------------
-   var      expl_         eq_              org_        solved 
---------- --------- ---------------- ---------------- --------
-    x         5          x == 5           x == 5        TRUE  
-
-    y     -(-3 + x)  y == -(-3 + x)     x + y == 3      TRUE  
-
-DUMMY___1   NULL    6 == 2 * (x + y) 6 == 2 * (x + y)  FALSE  
---------------------------------------------------------------
-
-Table: Table continues below
-
- 
-------------------------------------------------------------
- level   cluster   cluster.size   vars   vars.id   num.vars 
-------- --------- -------------- ------ --------- ----------
-   1        1           1          x        x         1     
-
-   2        2           1         y, x     x|y        2     
-
-   3        3           1         x, y     x|y        2     
-------------------------------------------------------------
-
-Table: Table continues below
-
- 
--------------------------------------------
- org.ind   val   is.check.eq   is.free.var 
---------- ----- ------------- -------------
-    3      NA       FALSE         FALSE    
-
-    1      NA       FALSE         FALSE    
-
-    2      NA       TRUE          FALSE    
--------------------------------------------
 
 The last equation has the flag `is.check.eq == TRUE`. This means this equation must hold true given the values of "x" and "y" computed by the earlier equations.
 
@@ -185,48 +120,24 @@ We now have an example with 3 equations and 3 variables. Unfortunately, equation
 ## rows:  2, 3
 ```
 
-
 ```r
-pandoc.table(df)
+  as.data.frame(df)
 ```
 
-
----------------------------------------------------------
- var     expl_            eq_                org_        
------ ------------ ----------------- --------------------
-  x        5            x == 5              x == 5       
-
-  z        0            0 == 0       6 == 2 * (x + y + z)
-
-  y   -(x + z - 3) y == -(x + z - 3)    x + y + z == 3   
----------------------------------------------------------
-
-Table: Table continues below
-
- 
------------------------------------------------------------
- solved   level   cluster   cluster.size   vars    vars.id 
--------- ------- --------- -------------- ------- ---------
-  TRUE      1        1           1           x        x    
-
-  TRUE      1        2           1         NULL            
-
-  TRUE      3        3           1        y, x, z   x|y|z  
------------------------------------------------------------
-
-Table: Table continues below
-
- 
-------------------------------------------------------
- num.vars   org.ind   val   is.check.eq   is.free.var 
----------- --------- ----- ------------- -------------
-    1          3      NA       FALSE         FALSE    
-
-    3          2      NA       TRUE          TRUE     
-
-    3          1      NA       FALSE         FALSE    
-------------------------------------------------------
-
+```
+##   var        expl_               eq_                 org_ solved level
+## 1   x            5            x == 5               x == 5   TRUE     1
+## 2   z            0            0 == 0 6 == 2 * (x + y + z)   TRUE     1
+## 3   y -(x + z - 3) y == -(x + z - 3)       x + y + z == 3   TRUE     3
+##   cluster cluster.size    vars vars.id num.vars org.ind val is.check.eq
+## 1       1            1       x       x        1       3  NA       FALSE
+## 2       2            1    NULL                3       2  NA        TRUE
+## 3       3            1 y, x, z   x|y|z        3       1  NA       FALSE
+##   is.free.var
+## 1       FALSE
+## 2        TRUE
+## 3       FALSE
+```
 
 ```r
   # Free variables
@@ -272,48 +183,24 @@ By default, we set the value of a free variable to 0. But you may pick any other
 ## Skip eat.single.back.
 ```
 
-
 ```r
-pandoc.table(df)
+  as.data.frame(df)
 ```
 
-
-------------------------------------------------------------
- var     expl_            eq_             org_       solved 
------ ------------ ----------------- -------------- --------
-  x        5            x == 5           x == 5       TRUE  
-
-  z        0            0 == 0           0 == 0       TRUE  
-
-  y   -(x + z - 3) y == -(x + z - 3) x + y + z == 3   TRUE  
-------------------------------------------------------------
-
-Table: Table continues below
-
- 
--------------------------------------------------------------
- level   cluster   cluster.size   vars    vars.id   num.vars 
-------- --------- -------------- ------- --------- ----------
-   1        1           1           x        x         1     
-
-   2        2           1         NULL                 0     
-
-   3        3           1        y, x, z   x|y|z       3     
--------------------------------------------------------------
-
-Table: Table continues below
-
- 
--------------------------------------------
- org.ind   val   is.check.eq   is.free.var 
---------- ----- ------------- -------------
-    2      NA       FALSE         FALSE    
-
-    3      NA       TRUE          TRUE     
-
-    1      NA       FALSE         FALSE    
--------------------------------------------
-
+```
+##   var        expl_               eq_           org_ solved level cluster
+## 1   x            5            x == 5         x == 5   TRUE     1       1
+## 2   z            0            0 == 0         0 == 0   TRUE     2       2
+## 3   y -(x + z - 3) y == -(x + z - 3) x + y + z == 3   TRUE     3       3
+##   cluster.size    vars vars.id num.vars org.ind val is.check.eq
+## 1            1       x       x        1       2  NA       FALSE
+## 2            1    NULL                0       3  NA        TRUE
+## 3            1 y, x, z   x|y|z        3       1  NA       FALSE
+##   is.free.var
+## 1       FALSE
+## 2        TRUE
+## 3       FALSE
+```
 
 ```r
   # Free variables

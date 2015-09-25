@@ -1,6 +1,6 @@
 examples.with.econ.models = function() {
 
-  set.restore.point.options(display.restore.point = TRUE)
+  set.restore.point.options(display.restore.point = !TRUE)
 
   library(EconModels)
   # Model builder
@@ -123,7 +123,7 @@ cluster.df.update.var.eq.info = function(df) {
   })
 
   # Find check.eqs and possible free variables
-  df$is.check.eq = sapply(seq_along(eqs), function(i) {
+  df$is.check.eq = sapply(seq_along(df$eq_), function(i) {
     ! (df$var[i] %in% df$vars[[i]])
   })
 

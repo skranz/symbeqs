@@ -130,7 +130,11 @@ examples.solve_symb = function() {
 #'
 #' @param eq the equation as an quoted R call
 #' @param var the variable to be solved for as a character
-sym.solve.eq= function(eq, var) {
+#' @param simplify shall the solution be simplified (default=TRUE)
+#' @return A list with two elements:
+#'          - solved: boolean that is TRUE if equation could be solved
+#'          -
+sym.solve.eq= function(eq, var, simplify=TRUE) {
   restore.point("sym.solve.eq")
 
   term = substitute(lhs - (rhs), list(lhs=eq[[2]],rhs=eq[[3]]))
@@ -154,6 +158,8 @@ sym.solve.eq= function(eq, var) {
   if (!identical(eq[[2]],symbol)) {
     sol = isolate.symbol(eq,symbol = symbol)
   }
+  if (simplify)
+    sol$eq[[3]] = Deriv::Simplify(sol$eq[[3]])
   sol
 }
 

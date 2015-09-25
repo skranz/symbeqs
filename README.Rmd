@@ -1,0 +1,124 @@
+---
+output: 
+  html_document: 
+    keep_md: yes
+---
+# Tools for symbolically simplifying or solving systems of equations
+
+The main function is `cluster.equations` that tries to separate the equation systems into subsets of equations, called cluster, that can be solved sequentially. A singleton cluster consists of a single equation and variable and may also be solved symbollically. Clusters that cannot be reduced to singletons must always be solved numerically in the end.
+
+### Basic example:
+```{r include=FALSE}
+library(symbeqs)
+library(data.table)
+library(stringr)
+library(knitr)
+library(pander)
+```
+
+```{r}
+  library(symbeqs)
+  eqs = list(
+    quote(x+y == z),
+    quote(x ==5),
+    quote(z + a +y == 3)
+  )
+  df = cluster.equations(eqs, endo=c("x","y","z"))
+```
+The resulting data.frame looks as follows:
+```{r results='asis'}
+pandoc.table(df)
+```
+
+
+Here we get exlicit solutions for all variables (column "expl_"). Note that the explizit solution for "y" contains the value of "x". That is because "x" can be computed before "y". The solution for "y" also contains the symbol "a", which is considered an exogenous parameter.
+
+We can solve the equations numerically (exploiting all explicit solutions and simplifications into clusters)
+
+```{r}
+eval.cluster.df(df, exo=list(a=5))
+```
+
+Alternatively, we can build a function that allows to quickly compute this solution for given exogenous parameters
+
+... NOT YEt NICELY IMPLEMENTED ...
+
+###  An equation system with one more equation than variables:
+
+```{r}
+  # More equations than variables
+  eqs = list(
+    quote(x+y == 3),
+    quote(6 == 2*(x+y)),
+    quote(x ==5)
+  )
+  df = cluster.equations(eqs, endo=c("x","y"))
+```
+
+```{r results='asis'}
+pandoc.table(df)
+```
+
+The last equation has the flag `is.check.eq == TRUE`. This means this equation must hold true given the values of "x" and "y" computed by the earlier equations.
+
+## An example with perfect colliniarity
+
+We now have an example with 3 equations and 3 variables. Unfortunately, equations 1 and 2 are collinear, so that we have effectively only 2 equations. When solving it, we get one check.equation and the assigned variable is a free variable.
+```{r}
+  # Collinearity
+  eqs = list(
+    quote(x+y+z == 3),
+    quote(6 == 2*(x+y+z)),
+    quote(x ==5)
+  )
+  df = cluster.equations(eqs, endo=c("x","y","z"))
+```
+
+```{r results='asis'}
+pandoc.table(df)
+```
+
+```{r}
+    
+  # Free variables
+  df$var[df$is.free.var]
+  
+  # Value of z is undetermined and by default set to 0
+  eval.cluster.df(df)
+  
+```
+By default, we set the value of a free variable to 0. But you may pick any other value by overwriting df$expl_.
+
+## An example with more variables than equations
+
+```{r}
+  # Too many variables
+  eqs = list(
+    quote(x+y+z == 3),
+    quote(x ==5)
+  )
+  df = cluster.equations(eqs, endo=c("x","y","z"))
+```
+
+```{r results='asis'}
+pandoc.table(df)
+```
+
+```{r}
+   
+  # Free variables
+  df$var[df$is.free.var]
+  
+  # Value of z is undetermined and by default set to 0
+  eval.cluster.df(df)
+```
+
+## Internals
+
+We always want to have as many variables as equations.
+
+If orginally, we have more variables than equations. We add dummy equations 0 == 0 and continue simplifying. 
+
+If we have more equations than variables, we add DUMMY variables. An equation that remains marked with a DUMMY variable will be a check equation.
+
+

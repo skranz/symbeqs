@@ -76,7 +76,7 @@ symbolic.cluster.subst.var = function(df, cluster, var, eq.ind=1) {
 
 }
 
-symbolic.subst.var = function(eqs, var, eq.ind=1, eq.solve.fun=sym.solve.eq,  simplify.fun = Deriv::Simplify, expl=NULL) {
+symbolic.subst.var = function(eqs, var, eq.ind=1, eq.solve.fun=sym.solve.eq,  simplify.fun = simplify.eq, expl=NULL) {
   restore.point("symbolic.subst.var")
 
   eq = eqs[[eq.ind]]
@@ -111,6 +111,7 @@ symbolic.subst.var = function(eqs, var, eq.ind=1, eq.solve.fun=sym.solve.eq,  si
 symbolic.subst.eqs = function(eqs,vars, subst.eqs=NULL, subst.vars=NULL, eq.inds=seq_along(eqs), subst.inds=NULL) {
 
   restore.point("symbolic.subst.eqs")
+  #stop()
   if (length(eqs)==0) {
     return(list(eqs=eqs, vars=vars, subst.eqs=subst.eqs, subst.vars=subst.vars, eq.inds=eq.inds, subst.inds=subst.inds))
   }
@@ -198,4 +199,21 @@ suggest.subst.eq.and.var = function(eqs,vars,eq.solve.fun=sym.solve.eq) {
 
   # Could not solve any variable
   return(list(ok=FALSE,eq.ind=NA, var="", expl=NULL, type="unsolved"))
+}
+
+
+#' Suggest an equation that is easiest to solve for a variable var
+#'
+#' @param eqs The equations that are considered (list of R calls)
+#' @param var the variable, we want to solve for (as character)
+suggest.eq.for.var = function(eqs,var) {
+  restore.point("suggest.eq.for.var")
+
+  res = suggest.subst.eq.and.var(eqs = eqs, vars=var)
+
+  if (res$ok) {
+    return(list(eq.ind=res$eq.ind, expl=res$expl, type=res$type))
+  } else {
+    return(list(eq.ind=1, expl=NULL, type=res$type))
+  }
 }

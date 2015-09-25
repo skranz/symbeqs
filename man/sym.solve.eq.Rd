@@ -4,12 +4,19 @@
 \alias{sym.solve.eq}
 \title{Try to solve an equation symbollically}
 \usage{
-sym.solve.eq(eq, var)
+sym.solve.eq(eq, var, simplify = TRUE)
 }
 \arguments{
 \item{eq}{the equation as an quoted R call}
 
 \item{var}{the variable to be solved for as a character}
+
+\item{simplify}{shall the solution be simplified (default=TRUE)}
+}
+\value{
+A list with two elements:
+         - solved: boolean that is TRUE if equation could be solved
+         -
 }
 \description{
 Try to solve an equation symbollically

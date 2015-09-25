@@ -9,5 +9,5 @@ Description: Solving or simplifying symbolic systems of equations in R
              Preliminary version: may change substantially.
 License: GPL >= 2.0
 LazyData: TRUE
-Depends: restorepoint, codeUtils, dplyr, Deriv
+Depends: restorepoint, codeUtils, dplyr, Deriv, optims
 Suggests: shiny, shinyEvents

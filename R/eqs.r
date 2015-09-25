@@ -1,3 +1,19 @@
+examples.with.econ.models = function() {
+
+  set.restore.point.options(display.restore.point = TRUE)
+
+  library(EconModels)
+  # Model builder
+  setwd("D:/libraries/EconModels/EconModels")
+  initEconModels()
+  em = load.model("ThreeEq")
+
+  init.model(em)
+
+  options(warn = 2)
+  res = testwise.init.model(em)
+
+}
 
 examples.cluster.equations = function() {
 
@@ -9,6 +25,19 @@ examples.cluster.equations = function() {
   )
   df = cluster.equations(eqs, endo=c("x","y","z"))
 
+
+  options(warn=2)
+  # More equations than variables
+  eqs = list(
+    quote(x+y == 3),
+    quote(x ==5),
+    quote(6 == 2*(x+y))
+  )
+
+  suggest.eq.for.var(eqs=eqs, var="y")
+  df = cluster.equations(eqs, endo=c("x","y"))
+
+  find.check.eqs(df=df)
 
 }
 
@@ -60,10 +89,36 @@ cluster.equations = function(eqs, var.li=NULL, endo=NULL, exo=NULL, verbose=TRUE
   if (solve.symbolic)  {
     df = solve.symbolic.cluster.df(df, skip.big=skip.big)
   }
+
+  df = cluster.df.update.var.eq.info(df)
+
   df
 }
 
-solve.symbolic.cluster.df = function(df, skip.big=FALSE, skip.small=FALSE, eq.solve.fun=sym.solve.eq,  simplify.fun = Deriv::Simplify) {
+#' Update df$vars, df$vars.id, df$is.free.var, and df$is.check.eq
+cluster.df.update.var.eq.info = function(df) {
+  restore.point("cluster.df.update.var.eq.info")
+
+  # Update variable list, given the new equations
+  df$vars  = lapply(df$eq_, find.variables)
+  df$vars.id = sapply(df$vars, function(vars) {
+    if (length(vars)==0) return("")
+    paste0(sort(vars), collapse="|")
+  })
+
+
+  df$is.check.eq = are.check.eqs(df=df)
+  df$is.free.var = df$is.check.eq & !str.starts.with(df$var,"DUMMY___")
+
+
+
+  # Set free variables to zero
+  df$expl_[df$is.free.var] = as.list(rep(0, sum(df$is.free.var)))
+  df$solved[df$is.free.var] = TRUE
+  df
+}
+
+solve.symbolic.cluster.df = function(df, skip.big=FALSE, skip.small=FALSE, eq.solve.fun=sym.solve.eq,  simplify.fun = simplify.eq) {
   restore.point("solve.symbolic.cluster.df")
 
   if (!skip.small) {
@@ -96,7 +151,7 @@ solve.symbolic.cluster.df = function(df, skip.big=FALSE, skip.small=FALSE, eq.so
   df
 }
 
-symbolic.cluster.equations = function(eqs, exo=NULL, endo=NULL, eq.solve.fun=sym.solve.eq, level=-1, subst=NULL, skip.big=FALSE, simplify.fun = Deriv::Simplify) {
+symbolic.cluster.equations = function(eqs, exo=NULL, endo=NULL, eq.solve.fun=sym.solve.eq, level=-1, subst=NULL, skip.big=FALSE, simplify.fun = simplify.eq) {
   restore.point("symbolic.cluster.equations")
 
   if (length(eqs)==2 & "K" %in% endo) restore.point("nfjdmfgdkgrngdgfgfhzbgvf")
@@ -297,3 +352,18 @@ extract.cluster.df.dummies = function(df) {
   return(list(df=df[!rows,,drop=FALSE], test.eqs = df$org_[rows]))
 }
 
+#' Find equations that cannot be solved for a variable
+#' and thereby just can be used to check whether they hold true
+are.check.eqs = function(eqs = df$eq_, vars = df$var, var.list=df$vars, df=NULL) {
+  restore.point("find.check.eqs")
+
+
+  if (is.null(var.list)) {
+    var.list = lapply(eqs, find.variables)
+  }
+
+  is.check = sapply(seq_along(eqs), function(i) {
+    (! (vars[i] %in% var.list[[i]]))
+  })
+  is.check
+}

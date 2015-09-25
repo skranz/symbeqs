@@ -106,19 +106,39 @@ eat.single.front = function(df, cluster, mat=NULL, repeated=FALSE, verbose=TRUE)
   cols = max.col(mat[rows,,drop=FALSE])
 
   esyms = syms[cols]
+
+  # we have variables that are determined by two or more equations
+  # decide which equations to take and which to drop
   if (any(duplicated(esyms))) {
+    drop.inds = NULL
+
     dupl.syms = unique(esyms[duplicated(esyms)])
 
     txt = paste0("The variables ", paste0(dupl.syms, collapse=", ")," are determined by more than one equation:")
 
+    sym = dupl.syms[1]
     for (sym in dupl.syms) {
       inds = which(esyms==sym)
       arows = crows[rows[inds]]
       aeqs = df$eq_[arows]
+
+      # select the equation we want to solve sym for
+      ret = suggest.eq.for.var(eqs=aeqs, var=sym)
+      # Index of rows that are not taken
+      drop.inds = c(drop.inds, inds[-ret$eq.ind])
+
       txt = c(txt, paste0("  ",sym,":"), paste0("    - ",sapply(aeqs, deparse1),collapse="\n"))
     }
     txt = paste0(txt, collapse="\n")
-    warning(txt)
+    if (verbose)
+      cat(txt)
+
+    # only keep selected equations
+    rows = rows[-drop.inds]
+    cols = max.col(mat[rows,,drop=FALSE])
+    esyms = syms[cols]
+
+
   }
 
   erows = crows[rows]
@@ -257,7 +277,7 @@ eat.single.back = function(df, cluster, mat=NULL, repeated=FALSE, verbose=TRUE) 
     cols.rows = sapply(cols, function(col) which(mat[,col]==1))
     dup.rows = unique(cols.rows[duplicated(cols.rows) | duplicated(cols.rows,fromLast = TRUE)])
 
-    txt = "Equation error found in eat.single back."
+    txt = "In eat.single back:"
     for (dup.row in dup.rows) {
       dup.vars = names(cols.rows)[cols.rows==dup.row]
       dup.eq = crows[dup.row]
@@ -266,7 +286,10 @@ eat.single.back = function(df, cluster, mat=NULL, repeated=FALSE, verbose=TRUE) 
         txt = c(txt, paste0("  Original form was:\n    ",deparse1(df$org_[[dup.eq]]) ))
       }
     }
-    warning(paste0(txt,collapse="\n"))
+    if (verbose) {
+      txt = c(txt,"Skip eat.single.back.")
+      cat(paste0(txt,collapse="\n"))
+    }
     return(list(changed=0, df=df, remaining.cluster=cluster, extracted.clusters=NULL, remaining.mat=mat))
 
   }

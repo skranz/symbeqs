@@ -18,6 +18,18 @@ examples.with.econ.models = function() {
 examples.cluster.equations = function() {
 
 
+  eqs = alist(y = y == y_eq, pi = pi == piT, pi_mr = pi_mr ==      piT, y_mr = y_mr == y_eq, Epi = Epi == lag_pi, y = y == A -      a * lag_r, pi = pi == Epi + alpha * (y - y_eq), next_Epi = next_Epi ==      pi, pi_mr = y_mr == y_eq - alpha * beta * (pi_mr - piT),      y_mr = pi_mr == next_Epi + alpha * (y_mr - y_eq), rcut = y_mr ==          A - a * rcut, r = r == pmax(rcut, -Epi), i = i == r +          Epi)
+
+  endo = c("y", "pi", "pi_mr", "y_mr", "Epi", "lag_pi", "lag_r", "next_Epi",  "rcut", "r", "i")
+
+  df = cluster.equations(eqs, endo=endo)
+
+  eval.cluster.df(df, make.random.params(df=df))
+
+  df
+
+
+
   eqs = list(
     quote(x+y == z),
     quote(x ==5),
@@ -100,19 +112,36 @@ cluster.df.update.var.eq.info = function(df) {
   restore.point("cluster.df.update.var.eq.info")
 
   # Update variable list, given the new equations
-  df$vars  = lapply(df$eq_, find.variables)
+  endo = df$var
+  df$vars = lapply(df$eq_, function(form) {
+    intersect(find.variables(form),endo)
+  })
+
   df$vars.id = sapply(df$vars, function(vars) {
     if (length(vars)==0) return("")
     paste0(sort(vars), collapse="|")
   })
 
+  # Find check.eqs and possible free variables
+  df$is.check.eq = sapply(seq_along(eqs), function(i) {
+    ! (df$var[i] %in% df$vars[[i]])
+  })
 
-  df$is.check.eq = are.check.eqs(df=df)
+  # We only have a check.eq if all equations in the cluster are check.eqs
+  df = mutate(group_by(df, cluster), is.check.eq = all(is.check.eq))
+
+  # non-singleton clusters of check eqs will be separated
+  rows = which(df$cluster.size >= 2 & df$is.check.eq)
+  if (length(rows)>0) {
+    df$cluster[rows] = df$cluster[rows]+ seq_along(rows) / (length(rows)+1)
+    df$cluster = rank(df$cluster,ties.method = "min")
+    df$cluster.size[rows] = 1
+  }
+
+  # If a check.eq has not a dummy variable, the assigned variable is free
   df$is.free.var = df$is.check.eq & !str.starts.with(df$var,"DUMMY___")
 
-
-
-  # Set free variables to zero
+  # Set free variables to zero and mark them as solved
   df$expl_[df$is.free.var] = as.list(rep(0, sum(df$is.free.var)))
   df$solved[df$is.free.var] = TRUE
   df
@@ -350,20 +379,4 @@ extract.explicit.eqs = function(eqs) {
 extract.cluster.df.dummies = function(df) {
   rows = str.starts.with(df$var,"DUMMY___")
   return(list(df=df[!rows,,drop=FALSE], test.eqs = df$org_[rows]))
-}
-
-#' Find equations that cannot be solved for a variable
-#' and thereby just can be used to check whether they hold true
-are.check.eqs = function(eqs = df$eq_, vars = df$var, var.list=df$vars, df=NULL) {
-  restore.point("find.check.eqs")
-
-
-  if (is.null(var.list)) {
-    var.list = lapply(eqs, find.variables)
-  }
-
-  is.check = sapply(seq_along(eqs), function(i) {
-    (! (vars[i] %in% var.list[[i]]))
-  })
-  is.check
 }

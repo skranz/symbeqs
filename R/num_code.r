@@ -379,3 +379,17 @@ adapt.make.inner.compute.code = function(df,  exo=NULL, subst.li=NULL) {
   inner = as.call(c(list(as.symbol("{")),li))
   inner
 }
+
+make.random.params = function(eqs=df$eq_, endo=df$var, exo=NULL, syms=NULL,df=NULL) {
+  restore.point("make.random.params")
+
+  if (is.null(exo)) {
+    if (is.null(syms)) {
+      syms = unique(unlist(lapply(eqs, find.variables)))
+    }
+    exo = setdiff(syms,endo)
+  }
+  params = runif(length(exo),0,1)
+  names(params) = exo
+  params
+}

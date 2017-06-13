@@ -1,5 +1,5 @@
 
-eat.from.cluster = function(df, cluster=df$cluster[1], eating.funs = list(eat.single.front,eat.single.back,eat.double.front), mat=NULL, repeated=TRUE) {
+eat.from.cluster = function(df, cluster=df$cluster[1], eating.funs = list(eat.single.front,eat.single.back,eat.double.front), mat=NULL, repeated=TRUE, verbose=TRUE) {
   restore.point("eat.from.cluster")
 
   num.funs = length(eating.funs)
@@ -8,7 +8,7 @@ eat.from.cluster = function(df, cluster=df$cluster[1], eating.funs = list(eat.si
   while(TRUE) {
     fun = eating.funs[[fun.ind]]
     while (TRUE) {
-      res = fun(df=df,cluster=cluster, mat=mat)
+      res = fun(df=df,cluster=cluster, mat=mat, verbose=verbose)
       if (res$changed==0) {
         if (!repeated) last.fun = fun.ind
         break

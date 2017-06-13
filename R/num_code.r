@@ -170,16 +170,16 @@ eqs.solution.report = function(eqs, var.li=NULL, exo=NULL, verbose=TRUE, funs=NU
 
   test.df = df;
   cluster = test.df$cluster[which.max(test.df$cluster.size)]
-  test.df = eat.from.cluster(df=test.df,cluster=cluster, repeated=FALSE,eating.funs = list(eat.single.front))
+  test.df = eat.from.cluster(df=test.df,cluster=cluster, verbose=verbose, repeated=FALSE,eating.funs = list(eat.single.front))
   any(duplicated(test.df$var))
 
   cluster = test.df$cluster[which.max(test.df$cluster.size)]
-  test.df = eat.from.cluster(df=test.df,cluster=cluster, repeated=FALSE,eating.funs = list(eat.single.back))
+  test.df = eat.from.cluster(df=test.df,cluster=cluster,, verbose=verbose, repeated=FALSE,eating.funs = list(eat.single.back))
   any(duplicated(test.df$var))
 
 
 
-  df = eat.from.cluster(df=df, cluster=1)
+  df = eat.from.cluster(df=df, cluster=1,verbose=verbose)
   df$val = eval.cluster.df(clu.df = df, exo=exo)
 
   write.cluster.df(df)

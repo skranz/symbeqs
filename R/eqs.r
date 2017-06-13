@@ -96,7 +96,7 @@ cluster.equations = function(eqs, var.li=NULL, endo=NULL, exo=NULL, verbose=TRUE
 
 
   if (!skip.eat) {
-    df = eat.from.cluster(df, cluster=1)
+    df = eat.from.cluster(df, cluster=1, verbose=verbose)
   }
   if (solve.symbolic)  {
     df = solve.symbolic.cluster.df(df, skip.big=skip.big)
